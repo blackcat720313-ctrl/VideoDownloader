@@ -28,6 +28,8 @@ jobs:
         shell: powershell
         run: |
           choco install ffmpeg -y
+          ffmpeg -version
+          ffprobe -version
 
       - name: 建立 EXE
         run: |
@@ -37,13 +39,36 @@ jobs:
         shell: powershell
         run: |
           New-Item -ItemType Directory -Force -Path "dist\ffmpeg"
-          Copy-Item "C:\ProgramData\chocolatey\bin\ffmpeg.exe" "dist\ffmpeg\ffmpeg.exe"
-          Copy-Item "C:\ProgramData\chocolatey\bin\ffprobe.exe" "dist\ffmpeg\ffprobe.exe"
+
+          $ffmpegPath = (Get-Command ffmpeg).Source
+          $ffprobePath = (Get-Command ffprobe).Source
+
+          Copy-Item $ffmpegPath "dist\ffmpeg\ffmpeg.exe"
+          Copy-Item $ffprobePath "dist\ffmpeg\ffprobe.exe"
+
+      - name: 檢查輸出檔案
+        shell: powershell
+        run: |
+          if (-not (Test-Path "dist\VideoDownloader.exe")) {
+            throw "找不到 VideoDownloader.exe"
+          }
+
+          if (-not (Test-Path "dist\ffmpeg\ffmpeg.exe")) {
+            throw "找不到 ffmpeg.exe"
+          }
+
+          if (-not (Test-Path "dist\ffmpeg\ffprobe.exe")) {
+            throw "找不到 ffprobe.exe"
+          }
+
+          Write-Host "EXE 和 FFmpeg 檔案確認完成！"
 
       - name: 打包下載檔
         shell: powershell
         run: |
-          Compress-Archive -Path "dist\VideoDownloader.exe", "dist\ffmpeg" -DestinationPath "VideoDownloader-Windows.zip"
+          Compress-Archive `
+            -Path "dist\VideoDownloader.exe", "dist\ffmpeg" `
+            -DestinationPath "VideoDownloader-Windows.zip"
 
       - name: 上傳 EXE
         uses: actions/upload-artifact@v4
