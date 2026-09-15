@@ -38,39 +38,30 @@ jobs:
       - name: 準備 FFmpeg
         shell: powershell
         run: |
-          New-Item -ItemType Directory -Force -Path "dist\ffmpeg"
+          New-Item -ItemType Directory -Force -Path "release\ffmpeg"
 
           $ffmpegPath = (Get-Command ffmpeg).Source
           $ffprobePath = (Get-Command ffprobe).Source
 
-          Copy-Item $ffmpegPath "dist\ffmpeg\ffmpeg.exe"
-          Copy-Item $ffprobePath "dist\ffmpeg\ffprobe.exe"
+          Copy-Item $ffmpegPath "release\ffmpeg\ffmpeg.exe"
+          Copy-Item $ffprobePath "release\ffmpeg\ffprobe.exe"
 
-      - name: 檢查輸出檔案
+          Copy-Item "dist\VideoDownloader.exe" "release\VideoDownloader.exe"
+
+      - name: 檢查成品
         shell: powershell
         run: |
-          if (-not (Test-Path "dist\VideoDownloader.exe")) {
-            throw "找不到 VideoDownloader.exe"
-          }
+          Get-ChildItem -Recurse "release"
 
-          if (-not (Test-Path "dist\ffmpeg\ffmpeg.exe")) {
-            throw "找不到 ffmpeg.exe"
-          }
-
-          if (-not (Test-Path "dist\ffmpeg\ffprobe.exe")) {
-            throw "找不到 ffprobe.exe"
-          }
-
-          Write-Host "EXE 和 FFmpeg 檔案確認完成！"
-
-      - name: 打包下載檔
+      - name: 打包成 ZIP
         shell: powershell
         run: |
           Compress-Archive `
-            -Path "dist\VideoDownloader.exe", "dist\ffmpeg" `
-            -DestinationPath "VideoDownloader-Windows.zip"
+            -Path "release\*" `
+            -DestinationPath "VideoDownloader-Windows.zip" `
+            -Force
 
-      - name: 上傳 EXE
+      - name: 上傳成品
         uses: actions/upload-artifact@v4
         with:
           name: VideoDownloader-Windows
