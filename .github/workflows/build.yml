@@ -35,7 +35,7 @@ jobs:
         run: |
           pyinstaller --onefile --windowed --name VideoDownloader video_downloader.py
 
-      - name: 準備 FFmpeg
+      - name: 準備成品
         shell: powershell
         run: |
           New-Item -ItemType Directory -Force -Path "release\ffmpeg"
@@ -45,7 +45,6 @@ jobs:
 
           Copy-Item $ffmpegPath "release\ffmpeg\ffmpeg.exe"
           Copy-Item $ffprobePath "release\ffmpeg\ffprobe.exe"
-
           Copy-Item "dist\VideoDownloader.exe" "release\VideoDownloader.exe"
 
       - name: 檢查成品
@@ -53,15 +52,12 @@ jobs:
         run: |
           Get-ChildItem -Recurse "release"
 
-      - name: 打包成 ZIP
+      - name: 打包 ZIP
         shell: powershell
         run: |
-          Compress-Archive `
-            -Path "release\*" `
-            -DestinationPath "VideoDownloader-Windows.zip" `
-            -Force
+          Compress-Archive -Path "release\*" -DestinationPath "VideoDownloader-Windows.zip" -Force
 
-      - name: 上傳成品
+      - name: 上傳 ZIP
         uses: actions/upload-artifact@v4
         with:
           name: VideoDownloader-Windows
